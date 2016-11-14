@@ -1,19 +1,28 @@
 from json import JSONEncoder
 import os
 import time
+from os.path import join, getsize
 
 class SizeElement():
 
-    def __init__(self, directory):
+    def __init__(self, directory, compute=True, verbose=False):
         #discover tree
-        from os.path import join, getsize
+        if compute:
+            self.computeSize( directory, verbose)
+
+
+    def computeSize(self, directory, verbose):
+        if verbose:
+            print "processing {}".format(directory)
         for root, dirs, files in os.walk(directory):
             self.time=time.time()
             self.path=root
             self.abs_path=os.path.abspath(root)
             self.sizefiles=sum(getsize(join(root, name)) for name in files)
             self.countfiles=len(files)
-            self.sub_elements=[SizeElement(subdir) for subdir in dirs]
+            if verbose:
+                print "{} files, {}o, {} sudirectories : {}".format(self.countfiles, self.sizefiles, len(dirs), dirs)
+            self.sub_elements=[SizeElement(join(root,subdir), True, verbose) for subdir in dirs]
             break
 
     def display(self):

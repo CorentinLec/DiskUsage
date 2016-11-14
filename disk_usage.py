@@ -45,27 +45,29 @@ class DiskUsage(object):
 
         #start by computing data
         if self.args.compute:
-            sizeElts = [SizeElement(directory) for directory in self.args.directories]
+            sizeElts = [SizeElement(directory, self.args.compute, self.args.verbose) for directory in self.args.directories]
             SizeData(sizeElts, self.args.file).write()
         #...
 
-        for e in sizeElts:
-            e.display()
+            if self.args.verbose:
+                for e in sizeElts:
+                    e.display()
 
 
 
 class SizeData(dict):
     """ Data processed."""
 
-    def __init__(self, sizeElts, datafile):
+    def __init__(self, sizeElts, datafile, verbose=False):
         dict.__init__(self)
         self.datafile=os.path.expanduser(datafile)
         self.size_elements=sizeElts
+        self.verbose=verbose
 
     def write(self):
         print "Writing in {}".format(self.datafile)
         with open(self.datafile, 'w') as f:
-            f.write(json.dumps(self.size_elements, cls=SizeElementEncoder))
+            f.write(json.dumps(self.size_elements, cls=SizeElementEncoder, indent=4, separators=(',', ': ')))
         print "done"
 
 
