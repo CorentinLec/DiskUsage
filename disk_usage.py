@@ -45,21 +45,21 @@ class DiskUsage(object):
 
         #start by computing data
         if self.args.compute:
-            sizeElts = [SizeElement(directory, self.args.compute, self.args.verbose) for directory in self.args.directories]
+            sizeElts = [SizeElement(directory=directory, compute=self.args.compute, verbose=self.args.verbose) for directory in self.args.directories]
             SizeData(sizeElts, self.args.file).write()
-        #...
-
-            if self.args.verbose:
-                for e in sizeElts:
-                    e.display()
-
+        #Display data
+        if self.args.display:
+            # First read data
+            SizeData(None, self.args.file, verbose=self.args.verbose).read()
 
 
-class SizeData(dict):
+
+
+class SizeData():
     """ Data processed."""
 
     def __init__(self, sizeElts, datafile, verbose=False):
-        dict.__init__(self)
+
         self.datafile=os.path.expanduser(datafile)
         self.size_elements=sizeElts
         self.verbose=verbose
@@ -70,7 +70,13 @@ class SizeData(dict):
             f.write(json.dumps(self.size_elements, cls=SizeElementEncoder, indent=4, separators=(',', ': ')))
         print "done"
 
+    def decode(self, x):
+        return SizeElement(compute=False, json_input=x, verbose=self.verbose)
 
+    def read(self):
+        with open(self.datafile) as f:
+            jsonData = json.load(f, object_hook=self.decode)
+        print [x.display(deep=True) for x in jsonData]
 
 if __name__=='__main__':
     du = DiskUsage()
