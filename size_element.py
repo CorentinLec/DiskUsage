@@ -3,7 +3,7 @@ import os
 import time
 from os.path import join, getsize
 
-class SizeElement():
+class SizeElement(object):
 
     def __init__(self, directory='.', compute=True, verbose=False, json_input=""):
         #discover tree
@@ -36,8 +36,7 @@ class SizeElement():
         self.countfiles=inputData["countfiles"]
         self.sub_elements=inputData["sub_elements"]
 
-
-    def display(self, deep=False):
+    def _display(self, deep=False):
         print "{} :".format(self.abs_path)
         print "\tsize : {}o in {} file(s)".format(self.sizefiles,self.countfiles)
         print "\t{} directory(ies)".format(len(self.sub_elements))
@@ -45,6 +44,8 @@ class SizeElement():
             for x in self.sub_elements:
                 x.display(deep)
 
+    def display(self):
+        print "TODO"
 
 class SizeElementEncoder(JSONEncoder):
 

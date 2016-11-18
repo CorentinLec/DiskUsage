@@ -11,6 +11,20 @@ from size_element import SizeElement
 from size_element import SizeElementEncoder
 #help(ArgumentParser.add_argument)
 
+class Display(object):
+    def __init__(self, size_data):
+        index=1
+        keys={}
+
+        for sizeel in size_data.size_elements:
+            keys[index]=sizeel
+
+        self.display(keys)
+
+    def display(self, keys):
+        for (index, sizeel) in keys.iteritems():
+            print index, sizeel
+
 class DiskUsage(object):
 
     def __init__(self):
@@ -42,20 +56,25 @@ class DiskUsage(object):
 
     def run(self):
         #main entry point
+        if self.args.verbose:
+            print self.args.__dict__
+
 
         #start by computing data
         if self.args.compute:
             sizeElts = [SizeElement(directory=directory, compute=self.args.compute, verbose=self.args.verbose) for directory in self.args.directories]
-            SizeData(sizeElts, self.args.file).write()
+            sd = SizeData(sizeElts, self.args.file).write()
         #Display data
         if self.args.display:
             # First read data
-            SizeData(None, self.args.file, verbose=self.args.verbose).read()
+            sd = SizeData(None, self.args.file, verbose=self.args.verbose).read()
 
+            if self.args.verbose:
+                print "sd : {}".format(sd)
+            #Data should be ready, start intercative display
+            Display(sd)
 
-
-
-class SizeData():
+class SizeData(object):
     """ Data processed."""
 
     def __init__(self, sizeElts, datafile, verbose=False):
@@ -69,6 +88,7 @@ class SizeData():
         with open(self.datafile, 'w') as f:
             f.write(json.dumps(self.size_elements, cls=SizeElementEncoder, indent=4, separators=(',', ': ')))
         print "done"
+        return self
 
     def decode(self, x):
         return SizeElement(compute=False, json_input=x, verbose=self.verbose)
@@ -76,7 +96,9 @@ class SizeData():
     def read(self):
         with open(self.datafile) as f:
             jsonData = json.load(f, object_hook=self.decode)
+            self.size_elements=jsonData
         print [x.display(deep=True) for x in jsonData]
+        return self
 
 if __name__=='__main__':
     du = DiskUsage()
